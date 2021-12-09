@@ -1,0 +1,145 @@
+// Thanks to Darkpassanger123 https://www.unknowncheats.me/forum/members/1005683.html
+int health	- 006C3B90
+int curAmmo - 006C3B94
+int magAmmo - 006C3B98
+float posX	- 00646CEC
+float posY	- 00646CF0
+float posZ	- 00646CF4
+float resX  - 006C3A38 006C3A48
+float resY  - 006C3A3C 006C3A4C
+
+#define O_World 0x647E1C
+#define O_HUD 0x6BF980 
+#define O_DropWeapon 0x585D90
+ 
+class World;
+class Camera;
+ 
+class PlayerEntity;
+class VehicleEntity;
+ 
+class HUD
+{
+public:
+	char pad_0x0000[0x4210]; //0x0000
+	__int32 Health; //0x4210 
+	__int32 Ammo; //0x4214 
+	__int32 AmmoInClip; //0x4218 
+	
+ 
+	static HUD* GetHUD()
+	{
+		return reinterpret_cast<HUD*>(O_HUD);
+	}
+ 
+}; //Size=0x4840
+ 
+ 
+class World
+{
+public:
+	char pad_0x0000[0x4]; //0x0000
+	void* N00000014; //0x0004 
+	void* N00000015; //0x0008 
+	void* N00000016; //0x000C 
+	char pad_0x0010[0x40]; //0x0010
+	Camera* pCamera; //0x0050 
+	PlayerEntity* pPlayer; //0x0054 
+	VehicleEntity* pVehicle; //0x0058 
+	char pad_0x005C[0x18]; //0x005C
+	float N00000030; //0x0074 
+	char pad_0x0078[0x6C]; //0x0078
+	PlayerEntity* pPlayer2; //0x00E4 
+	PlayerEntity* pPlayer3; //0x00E8 
+	char pad_0x00EC[0x8]; //0x00EC
+	void* Interacables; //0x00F4 
+	char pad_0x00F8[0x30C]; //0x00F8
+ 
+	static World* GetWorld() 
+	{
+		return *reinterpret_cast<World**>(O_World);
+	}
+ 
+}; //Size=0x0404
+ 
+class Camera
+{
+public:
+	char pad_0x0000[0x10]; //0x0000
+	Matrix matrix1; //0x0010 
+	Matrix matrix2; //0x0050 
+	char pad_0x0090[0xC]; //0x0090
+	float N0000013D; //0x009C 
+	float N0000013E; //0x00A0 
+	float N0000013F; //0x00A4 
+	float N00000140; //0x00A8 
+	char pad_0x00AC[0xB8]; //0x00AC
+	Matrix N0000096C; //0x0164 
+	char pad_0x01A4[0x40]; //0x01A4
+	Matrix N0000098D; //0x01E4 
+	Matrix N0000099D; //0x0224 
+	char pad_0x0264[0x120]; //0x0264
+ 
+}; //Size=0x0384
+ 
+ 
+class PlayerEntity
+{
+public:
+	char pad_0x0000[0x24]; //0x0000
+	Vector Position; //0x0024 
+	Vector Rotation; //0x0030 
+	Vector InitialPosition; //0x003C 
+	Vector InitialRotation; //0x0048 
+	char pad_0x0054[0x24]; //0x0054
+	Vector N000001C3; //0x0078 
+	char pad_0x0084[0x8]; //0x0084
+	float N000001C8; //0x008C 
+	float N000001C9; //0x0090 
+	char pad_0x0094[0x74]; //0x0094
+	Vector N000001E7; //0x0108 
+	char pad_0x0114[0x38C]; //0x0114
+	__int32 CurrentGunType; //0x04A0 
+	__int32 Ammo; //0x04A4 
+	__int32 AmmoInClip; //0x04A8 
+	char pad_0x04AC[0x158]; //0x04AC
+	float HealthMax; //0x0604 
+	char pad_0x0608[0x3C]; //0x0608
+	float Health; //0x0644 
+	char pad_0x0648[0x57C]; //0x0648
+ 
+}; //Size=0x0BC4
+ 
+ 
+ 
+class VehicleEntity
+{
+public:
+	char pad_0x0000[0x24]; //0x0000
+	Vector N000004E5; //0x0024 
+	Vector N00000520; //0x0030 
+	Vector N00000522; //0x003C 
+	Vector N00000524; //0x0048 
+	char pad_0x0054[0x24]; //0x0054
+	Vector N000004FA; //0x0078 
+	char pad_0x0084[0x10]; //0x0084
+	Vector N00000501; //0x0094 
+	char pad_0x00A0[0x1C]; //0x00A0
+	Vector N0000050B; //0x00BC 
+	Vector N0000050E; //0x00C8 
+	char pad_0x00D4[0x4]; //0x00D4
+	Vector N00000512; //0x00D8 
+	Vector N00000515; //0x00E4 
+	Vector N00000518; //0x00F0 
+	Vector N0000057B; //0x00FC 
+	char pad_0x0108[0x1A4]; //0x0108
+	Vector N000005B9; //0x02AC 
+	char pad_0x02B8[0x3C]; //0x02B8
+	Vector N000005CB; //0x02F4 
+	char pad_0x0300[0x90]; //0x0300
+	Vector Pos; //0x0390 
+	char pad_0x039C[0x6C]; //0x039C
+	Vector N00000634; //0x0408 
+	char pad_0x0414[0x170]; //0x0414
+ 
+}; //Size=0x0584

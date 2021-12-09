@@ -1,0 +1,9 @@
+int health	- 006C3B90
+int curAmmo - 006C3B94
+int magAmmo - 006C3B98
+float posX	- 00646CEC
+float posY	- 00646CF0
+float posZ	- 00646CF4
+float resX  - 006C3A38 006C3A48
+float resY  - 006C3A3C 006C3A4C
+	
