@@ -4,7 +4,7 @@ class CVector
 public:
 	float x, y, z;
 
-	CVector(float x, float y, float z)
+	CVector(float x = 0.0f, float y = 0.0f, float z = 0.0f)
 	{
 		this->x = x;
 		this->y = y;
@@ -13,9 +13,9 @@ public:
 
 	CVector(const CVector& vec)
 	{
-		this->x = x;
-		this->y = y;
-		this->z = z;
+		this->x = vec.x;
+		this->y = vec.y;
+		this->z = vec.z;
 	}
 
 	// Basic math operations

@@ -78,8 +78,8 @@ void MenuWindow::TeleportTab()
                     CVector pos = CWorld::GetInstance()->pPlayer->Position;
 
                     strcpy(m_nInputBuffer,
-                        (std::to_string(static_cast<float>(pos.x)) + ", " + std::to_string(static_cast<float>(pos.y)) +
-                            ", " + std::to_string(static_cast<float>(pos.z))).c_str());
+                        (std::to_string(static_cast<int>(pos.x)) + ", " + std::to_string(static_cast<int>(pos.y)) +
+                            ", " + std::to_string(static_cast<int>(pos.z))).c_str());
 				}
 
 				ImGui::EndChild();
@@ -90,7 +90,34 @@ void MenuWindow::TeleportTab()
 		if (ImGui::BeginTabItem("Search"))
 		{
 			ImGui::Spacing();
-			//Ui::DrawJSON(m_tpData, TeleportToLocation, RemoveTeleportEntry);
+            Ui::DrawJSON(m_tpData, 
+                [](std::string& rootkey, std::string& bLocName, std::string& loc)
+                {
+                    try
+                    {
+                        int dimension = 0;
+                        CVector pos;
+                        sscanf(loc.c_str(), "%d,%f,%f,%f", &dimension, &pos.x, &pos.y, &pos.z);
+                        CWorld::GetInstance()->pPlayer->Position = pos;
+                    }
+                    catch (...)
+                    {
+                        //SetHelpMessage("Invalid location", false, false, false);
+                    }
+                }, 
+                [](std::string& cat, std::string& key, std::string& val)
+                {
+                    if (cat == "Custom")
+                    {
+                        m_tpData.m_pJson->m_Data["Custom"].erase(key);
+                        //SetHelpMessage("Location removed", false, false, false);
+                        m_tpData.m_pJson->WriteToDisk();
+                    }
+                    else
+                    {
+                        //SetHelpMessage("You can only remove custom location", false, false, false);
+                    }
+                });
 			ImGui::EndTabItem();
 		}
 

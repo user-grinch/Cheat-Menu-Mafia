@@ -1,4 +1,5 @@
 #pragma once
+#define DIRECTINPUT_VERSION 0x0800
 #define DISCORD_INVITE "https://discord.gg/ZzW7kmf"
 #define GITHUB_LINK "https://github.com/user-grinch/Cheat-Menu-Gun"
 #define INPUT_BUFFER_SIZE 64
@@ -18,9 +19,28 @@
 #include "vendor/patch/injector.hpp"
 #include "json.h"
 #include "vkeys.h"
-
+#include "vendor/detours.h"
 
 using CallbackTable = std::vector<std::pair<std::string, void(*)()>>;
+
+struct JsonData
+{
+	ImGuiTextFilter m_Filter = "";
+	std::vector<std::string> m_Categories = { "All" };
+	std::string m_Selected = "All";
+	std::unique_ptr<CJson> m_pJson;
+
+	JsonData(const char* text)
+	{
+		m_pJson = std::make_unique<CJson>(text);
+
+		// Generate categories
+		for (auto element : m_pJson->m_Data.items())
+		{
+			m_Categories.push_back(element.key());
+		}
+	}
+};
 
 static std::ofstream gLog = std::ofstream("CheatMenu.log");
 // why doesn't this work?

@@ -1,14 +1,17 @@
 #include "pch.h"
 #include "d3dhook.h"
-#include "vendor/minhook/MinHook.h"
 
 HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbData, LPVOID lpvData)
 {
 	HRESULT result = oGetDeviceState(pThis, cbData, lpvData);
 
-	if (result == DI_OK) 
+	/*
+	* We're detecting it here since usual WndProc doesn't seem to work
+	*/
+	if (result == DI_OK && ImGui::GetIO().MouseDrawCursor)
 	{
-		if (ImGui::GetIO().MouseDrawCursor) 
+		int frameCount = ImGui::GetFrameCount();
+		if (cbData == 16) // mouse
 		{
 			LPDIMOUSESTATE2 mouseState = reinterpret_cast<LPDIMOUSESTATE2>(lpvData);
 
@@ -17,36 +20,43 @@ HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbD
 			mouseState->lY = 0;
 			mouseState->lZ = 0;
 
-			// Block left & right clicks
-
-			/*
-			* We're detecting it here since usual WndProc doesn't seem to work
-			*/
-			int frameCount = ImGui::GetFrameCount();
-			static int prevCount = -1;
-			if (frameCount != prevCount)
+			static int mouseCount = -1;
+			if (frameCount != mouseCount)
 			{
 				ImGuiIO& io = ImGui::GetIO();
 				io.MouseDown[0] = (mouseState->rgbButtons[0] != 0);
 				io.MouseDown[1] = (mouseState->rgbButtons[1] != 0);
-				prevCount = frameCount;
+				mouseCount = frameCount;
 			}
 
+			// Block left & right clicks
 			mouseState->rgbButtons[0] = 0;
 			mouseState->rgbButtons[1] = 0;
 		}
-	}
-	return result;
-}
+		else if (cbData == 256) // keyboard
+		{
+			static int keyCount = -1;
+			if (frameCount != keyCount)
+			{
+				ImGuiIO& io = ImGui::GetIO();
+				for (size_t i = 0; i < cbData; ++i)
+				{
+					bool state = reinterpret_cast<char*>(lpvData)[i] & 0x80;
+					UINT vk = MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL));
 
-HRESULT CALLBACK D3dHook::hkGetDeviceData(IDirectInputDevice8* pThis, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) 
-{
-	HRESULT result = oGetDeviceData(pThis, cbObjectData, rgdod, pdwInOut, dwFlags);
+					if (io.KeysDown[vk] && state)
+					{
+						continue;
+					}
 
-	if (result == DI_OK) 
-	{
-		if (ImGui::GetIO().MouseDrawCursor) {
-			*pdwInOut = 0; //set array size 0
+					io.KeysDown[vk] = state;
+					if (state)
+					{
+						io.AddInputCharacterUTF16(vk);
+					}
+				}
+				keyCount = frameCount;
+			}
 		}
 	}
 	return result;
@@ -96,18 +106,9 @@ HRESULT CALLBACK D3dHook::hkEndScene(IDirect3DDevice9* pDevice)
 		ImGuiStyle &style = ImGui::GetStyle();
 		style.WindowTitleAlign = ImVec2(0.5, 0.5);
 		style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f); // hide the grip
-
-		oWndProc = (WNDPROC)SetWindowLongPtr(GetForegroundWindow(), GWL_WNDPROC, (LRESULT)WndProc);
 	}
 
 	return oEndScene(pDevice);
-}
-
-LRESULT D3dHook::WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-
-	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 bool D3dHook::GetD3D9Device(void** pTable, size_t Size)
@@ -152,9 +153,9 @@ bool D3dHook::GetD3D9Device(void** pTable, size_t Size)
 	return true;
 }
 
-bool D3dHook::GetDinputDevice(void** pTable, size_t Size)
+bool D3dHook::GetDinputDevice(void** pMouse, size_t Size)
 {
-	if (!pTable)
+	if (!pMouse)
 	{
 		return false;
 	}
@@ -174,8 +175,10 @@ bool D3dHook::GetDinputDevice(void** pTable, size_t Size)
 		return false;
 	}
 
+
+	memcpy(pMouse, *reinterpret_cast<void***>(lpdiMouse), Size);
+	lpdiMouse->Release();
 	pDirectInput->Release();
-	memcpy(pTable, *reinterpret_cast<void***>(lpdiMouse), Size);
 	return true;
 }
 
@@ -183,27 +186,25 @@ void D3dHook::InjectHook(void* pCallback)
 {
 	ImGui::CreateContext();
 
-	static void *d3d9Device[119], *dinput8Device[32];
+	static void *d3d9Device[119], *diMouse[32];
 	if (GetD3D9Device(d3d9Device, sizeof(d3d9Device)) 
-		&& GetDinputDevice(dinput8Device, sizeof(dinput8Device))
+		&& GetDinputDevice(diMouse, sizeof(diMouse))
 	)
 	{
 		pCallbackFunc = pCallback;
-		MH_Initialize();
-		MH_CreateHook(d3d9Device[16], hkReset, (void**)&oReset);
-		MH_CreateHook(d3d9Device[42], hkEndScene, (void**)&oEndScene);
-		MH_CreateHook(dinput8Device[9], hkGetDeviceState, (void**)&oGetDeviceState);
-		MH_CreateHook(dinput8Device[10], hkGetDeviceData, (void**)&oGetDeviceData);
-
-		MH_EnableHook(MH_ALL_HOOKS);
+		oReset = (f_Reset)DetourFunction((PBYTE)d3d9Device[16], (PBYTE)hkReset);
+		oEndScene = (f_EndScene)DetourFunction((PBYTE)d3d9Device[42], (PBYTE)hkEndScene);
+		oGetDeviceState = (f_GetDeviceState)DetourFunction((PBYTE)diMouse[9], (PBYTE)hkGetDeviceState);
 		gLog << "Hook injection successful." << std::endl;
 	}
-	gLog << "Hook injection failied." << std::endl;
+	else
+	{
+		gLog << "Hook injection failied." << std::endl;
+	}
 }
 
 void D3dHook::RemoveHook()
 {
-	SetWindowLongPtr(GetForegroundWindow(), GWL_WNDPROC, (LRESULT)oWndProc);
 	ImGui_ImplDX9_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();

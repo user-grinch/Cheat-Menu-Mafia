@@ -123,22 +123,3 @@ public:
 	void WriteToDisk();
 	CJson(const char* text = "");
 };
-
-struct JsonData
-{
-	ImGuiTextFilter m_Filter = "";
-	std::vector<std::string> m_Categories = { "All" };
-	std::string m_Selected = "All";
-	std::unique_ptr<CJson> m_pJson;
-
-	JsonData(const char* text)
-	{
-		m_pJson = std::make_unique<CJson>(text);
-
-		// Generate categories
-		for (auto element : m_pJson->m_Data.items())
-		{
-			m_Categories.push_back(element.key());
-		}
-	}
-};
