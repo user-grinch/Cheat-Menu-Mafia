@@ -44,7 +44,8 @@ HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbD
 					bool state = reinterpret_cast<char*>(lpvData)[i] & 0x80;
 					UINT vk = MapVirtualKeyEx(i, MAPVK_VSC_TO_VK, GetKeyboardLayout(NULL));
 
-					if (io.KeysDown[vk] && state)
+					// ignore keypresses if holding
+					if (io.KeysDown[vk] && state) 
 					{
 						continue;
 					}
@@ -52,9 +53,14 @@ HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbD
 					io.KeysDown[vk] = state;
 					if (state)
 					{
-						io.AddInputCharacterUTF16(vk);
+						WCHAR c;
+						BYTE keystate[256];
+						memset(keystate, 0, 256);
+						ToUnicode(vk, i, keystate, &c, 1, 0);
+						io.AddInputCharacterUTF16(c);
 					}
 				}
+
 				keyCount = frameCount;
 			}
 		}
@@ -175,7 +181,8 @@ bool D3dHook::GetDinputDevice(void** pMouse, size_t Size)
 		return false;
 	}
 
-
+	lpdiMouse->SetDataFormat(&c_dfDIKeyboard);
+	lpdiMouse->SetCooperativeLevel(GetActiveWindow(), DISCL_NONEXCLUSIVE);
 	memcpy(pMouse, *reinterpret_cast<void***>(lpdiMouse), Size);
 	lpdiMouse->Release();
 	pDirectInput->Release();
@@ -195,11 +202,6 @@ void D3dHook::InjectHook(void* pCallback)
 		oReset = (f_Reset)DetourFunction((PBYTE)d3d9Device[16], (PBYTE)hkReset);
 		oEndScene = (f_EndScene)DetourFunction((PBYTE)d3d9Device[42], (PBYTE)hkEndScene);
 		oGetDeviceState = (f_GetDeviceState)DetourFunction((PBYTE)diMouse[9], (PBYTE)hkGetDeviceState);
-		gLog << "Hook injection successful." << std::endl;
-	}
-	else
-	{
-		gLog << "Hook injection failied." << std::endl;
 	}
 }
 

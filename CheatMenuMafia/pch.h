@@ -1,7 +1,7 @@
 #pragma once
 #define DIRECTINPUT_VERSION 0x0800
 #define DISCORD_INVITE "https://discord.gg/ZzW7kmf"
-#define GITHUB_LINK "https://github.com/user-grinch/Cheat-Menu-Gun"
+#define GITHUB_LINK "https://github.com/user-grinch/Cheat-Menu-Mafia"
 #define INPUT_BUFFER_SIZE 64
 
 #include <vector>

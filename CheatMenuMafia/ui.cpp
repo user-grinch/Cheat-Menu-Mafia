@@ -144,7 +144,7 @@ void Ui::DrawHeaders(CallbackTable& data)
 {
 	static void* pCallback;
 	static int buttonInRow = 3;
-	static ImVec2 size = GetSize(buttonInRow, false);
+	ImVec2 size = GetSize(buttonInRow, false);
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImVec4 buttonCol = style.Colors[ImGuiCol_Button];
 
@@ -171,7 +171,7 @@ void Ui::DrawHeaders(CallbackTable& data)
 		}
 	}
 	ImGui::PopStyleVar();
-	ImGui::Dummy(ImVec2(0, 5));
+	ImGui::Dummy(ImVec2(0, 20));
 
 	if (m_HeaderId == "")
 	{
@@ -186,14 +186,14 @@ void Ui::DrawHeaders(CallbackTable& data)
 		ImGui::NewLine();
 		if (ImGui::Button("Discord server", ImVec2(GetSize(2))))
 		{
-			ShellExecute(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
+			ShellExecuteA(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
 		}
 
 		ImGui::SameLine();
 
 		if (ImGui::Button("GitHub repo", ImVec2(GetSize(2))))
 		{
-			ShellExecute(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
+			ShellExecuteA(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
 		}
 
 		ImGui::NewLine();

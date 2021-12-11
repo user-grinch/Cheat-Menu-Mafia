@@ -36,11 +36,31 @@ void MenuWindow::Draw()
 
 void MenuWindow::Process()
 {
-    // TODO: Implement proper hotkeys
-    if ((GetKeyState(VK_LCONTROL) & 0x8000) && (GetKeyState(VK_KEY_M) & 0x8000) != 0)
+    CWorld* pWorld = CWorld::GetInstance();
+    if (pWorld && pWorld->pPlayer)
     {
-        m_bShowMenu = !m_bShowMenu;
-        Sleep(250);
+        // TODO: Implement proper hotkeys
+        if ((GetKeyState(VK_LCONTROL) & 0x8000) && (GetKeyState(VK_KEY_M) & 0x8000) != 0)
+        {
+            m_bShowMenu = !m_bShowMenu;
+            Sleep(250);
+        }
+
+        if (m_bNoReload)
+        {
+            pWorld->pPlayer->Ammo = 99;
+        }
+
+        if (m_bGodMode)
+        {
+            pWorld->pPlayer->Health = 100.0f;
+            CHud::GetInstance()->Health = 100;
+        }
+
+        if (m_bUnlimitedAmmo)
+        {
+            pWorld->pPlayer->AmmoInClip = 99;
+        }
     }
 }
 
@@ -62,9 +82,10 @@ void MenuWindow::TeleportTab()
 				{
 					try
 					{
-                        CVector& pos = CWorld::GetInstance()->pPlayer->Position;
+                        CVector pos;
 						sscanf(m_nInputBuffer, "%f,%f,%f", &pos.x, &pos.y, &pos.z);
 						pos.z += 1.0f;
+                        CWorld::GetInstance()->pPlayer->Position = pos;
 					}
 					catch (...)
 					{
@@ -95,10 +116,8 @@ void MenuWindow::TeleportTab()
                 {
                     try
                     {
-                        int dimension = 0;
-                        CVector pos;
-                        sscanf(loc.c_str(), "%d,%f,%f,%f", &dimension, &pos.x, &pos.y, &pos.z);
-                        CWorld::GetInstance()->pPlayer->Position = pos;
+                        CVector &pos = CWorld::GetInstance()->pPlayer->Position;
+                        sscanf(loc.c_str(), "%f,%f,%f", &pos.x, &pos.y, &pos.z);
                     }
                     catch (...)
                     {
@@ -129,7 +148,7 @@ void MenuWindow::TeleportTab()
 			ImGui::Spacing();
 			if (ImGui::Button("Add location", Ui::GetSize()))
 			{
-				m_tpData.m_pJson->m_Data["Custom"][m_nLocationBuffer] = ("0, " + std::string(m_nInputBuffer));
+				m_tpData.m_pJson->m_Data["Custom"][m_nLocationBuffer] = std::string(m_nInputBuffer);
 				m_tpData.m_pJson->WriteToDisk();
 			}
 			ImGui::EndTabItem();
@@ -142,15 +161,16 @@ void MenuWindow::StatsTab()
 {
     ImGui::Columns(2, NULL, false);
     ImGui::Checkbox("God mode", &m_bGodMode);
+    ImGui::Checkbox("No reload", &m_bNoReload);
     ImGui::NextColumn();
     ImGui::Checkbox("Unlimited ammo", &m_bUnlimitedAmmo);
     ImGui::Columns(1);
 
+    ImGui::Spacing();
     CWorld *pWorld = CWorld::GetInstance();
-
     ImGui::InputInt("Ammo", &pWorld->pPlayer->Ammo);
     ImGui::InputInt("Ammo in Clip", &pWorld->pPlayer->AmmoInClip);
-    if (ImGui::SliderFloat("Health", &pWorld->pPlayer->Health, 0.0f, pWorld->pPlayer->HealthMax))
+    if (ImGui::SliderFloat("Health", &pWorld->pPlayer->Health, 0.0f, 100.0f))
     {
         CHud::GetInstance()->Health = (int)pWorld->pPlayer->Health;
     }
@@ -169,14 +189,14 @@ void MenuWindow::MenuTab()
 
     if (ImGui::Button("Discord server", ImVec2(Ui::GetSize(3))))
     {
-        ShellExecute(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
+        ShellExecuteA(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
     }
 
     ImGui::SameLine();
 
     if (ImGui::Button("GitHub repo", ImVec2(Ui::GetSize(3))))
     {
-        ShellExecute(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
+        ShellExecuteA(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
     }
     ImGui::Spacing();
 

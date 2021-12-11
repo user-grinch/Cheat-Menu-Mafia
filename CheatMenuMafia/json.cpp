@@ -2,6 +2,7 @@
 #include "json.h"
 #include <filesystem>
 #include <fstream>
+#include "vendor/Paths.h"
 
 CJson::CJson(const char* name)
 {
@@ -10,7 +11,7 @@ CJson::CJson(const char* name)
 		return;
 	}
 
-	m_FilePath = "/CheatMenu/json/" + std::string(name) + ".json";
+	m_FilePath = PLUGIN_PATH((char*)"/CheatMenu/json/") + std::string(name) + ".json";
 
 	if (std::filesystem::exists(m_FilePath))
 	{

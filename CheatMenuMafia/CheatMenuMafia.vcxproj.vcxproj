@@ -192,6 +192,7 @@
     <ClInclude Include="vendor\patch\utility.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ui.h" />
+    <ClInclude Include="vendor\Paths.h" />
     <ClInclude Include="vkeys.h" />
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +235,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ui.cpp" />
+    <ClCompile Include="vendor\Paths.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\detours.lib" />

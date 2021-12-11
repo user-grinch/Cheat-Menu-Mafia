@@ -6,11 +6,11 @@ class MenuWindow
 private:
 	static inline bool m_bShowMenu;
 
-	static inline bool m_bGodMode, m_bUnlimitedAmmo;
+	static inline bool m_bGodMode, m_bNoReload, m_bUnlimitedAmmo;
 	static inline HANDLE handle = GetModuleHandle(NULL);
 
 	// teleport tab
-	static inline JsonData m_tpData{"teleport"};
+	static inline JsonData m_tpData = JsonData("teleport");
 	static inline char m_nInputBuffer[INPUT_BUFFER_SIZE], m_nLocationBuffer[INPUT_BUFFER_SIZE];;
 public:
 	MenuWindow() = delete;
