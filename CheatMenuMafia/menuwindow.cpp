@@ -4,6 +4,7 @@
 #include "ui.h"
 #include "game/CWorld.h"
 #include "game/CHud.h"
+#include "vendor/patch/assembly.hpp"
 
 void MenuWindow::Draw()
 {
@@ -57,7 +58,7 @@ void MenuWindow::Process()
             CHud::GetInstance()->Health = 100;
         }
 
-        if (m_bUnlimitedAmmo)
+        if (m_bInfiniteAmmo)
         {
             pWorld->pPlayer->AmmoInClip = 99;
         }
@@ -159,23 +160,151 @@ void MenuWindow::TeleportTab()
 
 void MenuWindow::StatsTab()
 {
-    ImGui::Columns(2, NULL, false);
-    ImGui::Checkbox("God mode", &m_bGodMode);
-    ImGui::Checkbox("No reload", &m_bNoReload);
-    ImGui::NextColumn();
-    ImGui::Checkbox("Unlimited ammo", &m_bUnlimitedAmmo);
-    ImGui::Columns(1);
-
-    ImGui::Spacing();
-    CWorld *pWorld = CWorld::GetInstance();
-    ImGui::InputInt("Ammo", &pWorld->pPlayer->Ammo);
-    ImGui::InputInt("Ammo in Clip", &pWorld->pPlayer->AmmoInClip);
-    if (ImGui::SliderFloat("Health", &pWorld->pPlayer->Health, 0.0f, 100.0f))
+    if (ImGui::BeginTabBar("STatsTabBar"))
     {
-        CHud::GetInstance()->Health = (int)pWorld->pPlayer->Health;
-    }
+        if (ImGui::BeginTabItem("Checkbox"))
+        {
+            ImGui::Spacing();
+            ImGui::Columns(2, NULL, false);
+            static bool fastCarUnlock;
+            if (ImGui::Checkbox("Fast car unlock", &fastCarUnlock))
+            {
+                if (fastCarUnlock)
+                {
+                    injector::MakeInline<0x595ABC, 0x595AC2>([](injector::reg_pack& regs)
+                        {
+                            *(float*)(regs.esi + 0x44c) = 0.0f;
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x595ABC, (void*)"\x89\x86\x4C\x04\x00\x00", 6, true);
+                }
+            }
+            ImGui::Checkbox("God mode", &m_bGodMode);
+            ImGui::Checkbox("Infinite ammo", &m_bInfiniteAmmo);
+            static bool infiniteFuel;
+            if (ImGui::Checkbox("Infinite fuel", &infiniteFuel))
+            {
+                if (infiniteFuel)
+                {
+                    injector::MakeInline<0x4CB6FB, 0x4CB701>([](injector::reg_pack& regs)
+                        {
+                            *(float*)(regs.ecx + 0xC30) = 150.0f;
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x4CB6FB, (void*)"\xD9\x99\x30\x0C\x00\x00", 6, true);
+                }
+            }
+            static bool infiniteMissionTimer;
+            if (ImGui::Checkbox("Infinite mission timer", &infiniteMissionTimer))
+            {
+                if (infiniteMissionTimer)
+                {
+                    injector::MakeNOP(0x60286E, 6, true);
+                    injector::MakeNOP(0x6028AA, 6, true);
+                    injector::MakeNOP(0x6028C9, 6, true);
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x60286E, (void*)"\x89\x85\x70\x41\x00\x00", 6, true);
+                    injector::WriteMemoryRaw(0x6028AA, (void*)"\x89\x85\x6C\x41\x00\x00", 6, true);
+                    injector::WriteMemoryRaw(0x6028C9, (void*)"\x89\x95\x6C\x41\x00\x00", 6, true);
+                }
+            }
+            ImGui::NextColumn();
+            static bool weaponPrecision;
+            if (ImGui::Checkbox("Max weapon precision", &weaponPrecision))
+            {
+                if (weaponPrecision)
+                {
+                    injector::WriteMemoryRaw(0x5F8940, (void*)"\xC7\x81\x3C\x42\x00\x00\x00\x00\x80\x3F", 10, true); // crosshair
 
-    ImGui::Dummy(ImVec2(0, 10));
+                    // recoil
+                    injector::MakeInline<0x5953C2, 0x5953C8>([](injector::reg_pack& regs)
+                        {
+                            *(float*)(regs.esi + 0xAD0) = 0.0f;
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x5F8940, (void*)"\x8B\x44\x24\x04\x89\x81\x3C\x42\x00\x00", 10, true);
+                    injector::WriteMemoryRaw(0x5953C2, (void*)"\xD9\x96\xD0\x0A\x00\x00", 6, true);
+                }
+            }
+            static bool noCarDamage;
+            if (ImGui::Checkbox("No car damage", &noCarDamage))
+            {
+                if (noCarDamage)
+                {
+                    injector::MakeInline<0x426242, 0x426248>([](injector::reg_pack& regs)
+                        {
+                            *(float*)(regs.esi + 0x20c4) = 100.0f;
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x426242, (void*)"\xD9\x96\xC4\x20\x00\x00", 6, true);
+                }
+            }
+            ImGui::Checkbox("No reload", &m_bNoReload);
+            static bool oneHitKill;
+            if (ImGui::Checkbox("One hit kill", &oneHitKill))
+            {
+                if (oneHitKill)
+                {
+                    injector::MakeInline<0X5768C6, 0X5768CC>([](injector::reg_pack& regs)
+                        {
+                            float health = (float)regs.eax;
+                            bool isPlayer = (*(WORD*)(GetModuleHandle(NULL) + 0x2CC) != 1);
+
+                            if (health < 99 && !isPlayer)
+                            {
+                                *(int*)regs.esi = 0;
+                            }
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x5768C6, (void*)"\xD9\x86\x44\x06\x00\x00", 6, true);
+                }
+            }
+            static bool superSpeed, flag1;
+            if (ImGui::Checkbox("Super speed", &superSpeed))
+            {
+                injector::MakeInline<0x57D3E7, 0x57D3ED>([](injector::reg_pack& regs)
+                    {
+                        *(float*)(regs.ecx + 0x65c) = superSpeed ? 10.0f : 1.0f;
+                        flag1 = true;
+                    });
+            }
+
+            if (flag1)
+            {
+                injector::WriteMemoryRaw(0x57D3E7, (void*)"\xD8\x89\x5C\x06\x00\x00", 6, true);
+                flag1 = false;
+            }
+
+            ImGui::Columns(1);
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Misc"))
+        {
+            ImGui::Spacing();
+            CWorld* pWorld = CWorld::GetInstance();
+            ImGui::InputInt("Ammo", &pWorld->pPlayer->Ammo);
+            ImGui::InputInt("Ammo in Clip", &pWorld->pPlayer->AmmoInClip);
+            if (ImGui::SliderFloat("Health", &pWorld->pPlayer->Health, 0.0f, 100.0f))
+            {
+                CHud::GetInstance()->Health = (int)pWorld->pPlayer->Health;
+            }
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
 }
 
 void MenuWindow::MenuTab()
@@ -214,11 +343,11 @@ void MenuWindow::MenuTab()
         ImGui::Columns(1);
 
         ImGui::Dummy(ImVec2(0, 10));
-        ImGui::TextWrapped("Thanks to Darkpassanger123 for sharing his classes.");
+        ImGui::TextWrapped("Thanks to Darkpassanger123 & l0wb1t for sharing their work.");
         ImGui::Dummy(ImVec2(0, 10));
         ImGui::TextWrapped("If you find bugs or have suggestions, let me know on discord.");
         ImGui::Dummy(ImVec2(0, 20));
-        Ui::CenterdText("Copyright Grinch_ 2021-2022. All rights reserved");
+        Ui::CenterdText("Copyright Grinch_ 2021-2022.");
 
         ImGui::EndChild();
     }

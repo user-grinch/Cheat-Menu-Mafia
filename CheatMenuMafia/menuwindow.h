@@ -6,7 +6,7 @@ class MenuWindow
 private:
 	static inline bool m_bShowMenu;
 
-	static inline bool m_bGodMode, m_bNoReload, m_bUnlimitedAmmo;
+	static inline bool m_bGodMode, m_bNoReload, m_bInfiniteAmmo;
 	static inline HANDLE handle = GetModuleHandle(NULL);
 
 	// teleport tab
