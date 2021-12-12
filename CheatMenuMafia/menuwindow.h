@@ -7,6 +7,7 @@ private:
 	static inline bool m_bShowMenu;
 
 	static inline bool m_bGodMode, m_bNoReload, m_bInfiniteAmmo;
+	static inline int m_bGodModeHealth; // backup for actual health
 	static inline HANDLE handle = GetModuleHandle(NULL);
 
 	// teleport tab

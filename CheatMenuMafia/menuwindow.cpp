@@ -54,8 +54,7 @@ void MenuWindow::Process()
 
         if (m_bGodMode)
         {
-            pWorld->pPlayer->Health = 100.0f;
-            CHud::GetInstance()->Health = 100;
+            CHud::GetInstance()->Health = m_bGodModeHealth;
         }
 
         if (m_bInfiniteAmmo)
@@ -160,10 +159,18 @@ void MenuWindow::TeleportTab()
 
 void MenuWindow::StatsTab()
 {
+    CVehicle* pVeh = CWorld::GetInstance()->pVehicle;
+
+    if (ImGui::Button("Drop random weapon", ImVec2(Ui::GetSize())))
+    {
+        ((int(*__fastcall)(int))0x585D90)(reinterpret_cast<int>(CWorld::GetInstance()->pPlayer));
+    }
+    ImGui::Spacing();
     if (ImGui::BeginTabBar("STatsTabBar"))
     {
         if (ImGui::BeginTabItem("Checkbox"))
         {
+            ImGui::BeginChild("CheckboxStats");
             ImGui::Spacing();
             ImGui::Columns(2, NULL, false);
             static bool fastCarUnlock;
@@ -181,7 +188,43 @@ void MenuWindow::StatsTab()
                     injector::WriteMemoryRaw(0x595ABC, (void*)"\x89\x86\x4C\x04\x00\x00", 6, true);
                 }
             }
-            ImGui::Checkbox("God mode", &m_bGodMode);
+            static bool fastKill;
+            if (ImGui::Checkbox("Fast kill", &fastKill))
+            {
+                if (fastKill)
+                {
+                    injector::MakeInline<0X5768C6, 0X5768CC>([](injector::reg_pack& regs)
+                        {
+                            float health = (float)regs.eax;
+                            bool isPlayer = (*(WORD*)(GetModuleHandle(NULL) + 0x2CC) != 1);
+
+                            if (health < 100 && !isPlayer)
+                            {
+                                *(int*)regs.esi = 0;
+                            }
+                        });
+                }
+                else
+                {
+                    injector::WriteMemoryRaw(0x5768C6, (void*)"\xD9\x86\x44\x06\x00\x00", 6, true);
+                }
+            }
+            if (ImGui::Checkbox("God mode", &m_bGodMode))
+            {
+                if (m_bGodMode)
+                {
+                    injector::MakeInline<0x59427F, 0x594285>([](injector::reg_pack& regs)
+                    {
+                        *(float*)(regs.esi + 0x644) = 999.0f;
+                    });
+                    m_bGodModeHealth = CHud::GetInstance()->Health;
+                }
+                else
+                {
+                    CWorld::GetInstance()->pPlayer->Health = CHud::GetInstance()->Health;
+                    injector::WriteMemoryRaw(0x59427F, (void*)"\xD9\x86\x44\x06\x00\x00", 6, true);
+                }
+            }
             ImGui::Checkbox("Infinite ammo", &m_bInfiniteAmmo);
             static bool infiniteFuel;
             if (ImGui::Checkbox("Infinite fuel", &infiniteFuel))
@@ -214,7 +257,6 @@ void MenuWindow::StatsTab()
                     injector::WriteMemoryRaw(0x6028C9, (void*)"\x89\x95\x6C\x41\x00\x00", 6, true);
                 }
             }
-            ImGui::NextColumn();
             static bool weaponPrecision;
             if (ImGui::Checkbox("Max weapon precision", &weaponPrecision))
             {
@@ -234,6 +276,7 @@ void MenuWindow::StatsTab()
                     injector::WriteMemoryRaw(0x5953C2, (void*)"\xD9\x96\xD0\x0A\x00\x00", 6, true);
                 }
             }
+            ImGui::NextColumn();
             static bool noCarDamage;
             if (ImGui::Checkbox("No car damage", &noCarDamage))
             {
@@ -250,27 +293,6 @@ void MenuWindow::StatsTab()
                 }
             }
             ImGui::Checkbox("No reload", &m_bNoReload);
-            static bool oneHitKill;
-            if (ImGui::Checkbox("One hit kill", &oneHitKill))
-            {
-                if (oneHitKill)
-                {
-                    injector::MakeInline<0X5768C6, 0X5768CC>([](injector::reg_pack& regs)
-                        {
-                            float health = (float)regs.eax;
-                            bool isPlayer = (*(WORD*)(GetModuleHandle(NULL) + 0x2CC) != 1);
-
-                            if (health < 99 && !isPlayer)
-                            {
-                                *(int*)regs.esi = 0;
-                            }
-                        });
-                }
-                else
-                {
-                    injector::WriteMemoryRaw(0x5768C6, (void*)"\xD9\x86\x44\x06\x00\x00", 6, true);
-                }
-            }
             static bool superSpeed, flag1;
             if (ImGui::Checkbox("Super speed", &superSpeed))
             {
@@ -288,6 +310,8 @@ void MenuWindow::StatsTab()
             }
 
             ImGui::Columns(1);
+
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
 
