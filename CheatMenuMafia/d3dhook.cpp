@@ -58,7 +58,18 @@ HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbD
 						BYTE keystate[256];
 						memset(keystate, 0, 256);
 						ToUnicode(vk, i, keystate, &c, 1, 0);
+
+						// Capital letters on shift hold
+						if (io.KeyShift && c >= 0x61 && c <= 0x7A)
+						{
+							c -= 0x20; 
+						}
 						io.AddInputCharacterUTF16(c);
+					}
+
+					if (io.WantTextInput)
+					{
+						reinterpret_cast<char*>(lpvData)[i] &= ~0x80;
 					}
 				}
 

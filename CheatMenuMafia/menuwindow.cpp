@@ -41,10 +41,28 @@ void MenuWindow::Process()
     if (pWorld && pWorld->pPlayer)
     {
         // TODO: Implement proper hotkeys
-        if ((GetKeyState(VK_LCONTROL) & 0x8000) && (GetKeyState(VK_KEY_M) & 0x8000) != 0)
+        ImGuiIO& io = ImGui::GetIO();
+        if (GetKeyState(VK_CONTROL) & 0x8000)
         {
-            m_bShowMenu = !m_bShowMenu;
-            Sleep(250);
+            io.KeyCtrl = true;
+            if ((GetKeyState(VK_KEY_M) & 0x8000) != 0)
+            {
+                m_bShowMenu = !m_bShowMenu;
+                Sleep(250);
+            }
+        }
+        else
+        {
+            io.KeyCtrl = false;
+        }
+
+        if (GetKeyState(VK_SHIFT) & 0x8000)
+        {
+            io.KeyShift = true;
+        }
+        else
+        {
+            io.KeyShift = false;
         }
 
         if (m_bNoReload)
@@ -241,6 +259,7 @@ void MenuWindow::StatsTab()
                     injector::WriteMemoryRaw(0x4CB6FB, (void*)"\xD9\x99\x30\x0C\x00\x00", 6, true);
                 }
             }
+            ImGui::NextColumn();
             static bool infiniteMissionTimer;
             if (ImGui::Checkbox("Infinite mission timer", &infiniteMissionTimer))
             {
@@ -276,7 +295,6 @@ void MenuWindow::StatsTab()
                     injector::WriteMemoryRaw(0x5953C2, (void*)"\xD9\x96\xD0\x0A\x00\x00", 6, true);
                 }
             }
-            ImGui::NextColumn();
             static bool noCarDamage;
             if (ImGui::Checkbox("No car damage", &noCarDamage))
             {
