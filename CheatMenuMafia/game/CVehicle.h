@@ -26,7 +26,7 @@ public:
 	char pad_0x02B8[0x3C]; 
 	CVector N000005CB; 
 	char pad_0x0300[0x90]; 
-	CVector Pos; 
+	CVector m_fPos; 
 	char pad_0x039C[0x6C]; 
 	CVector N00000634; 
 	char pad_0x0414[0x170]; 

@@ -161,11 +161,11 @@ void MenuWindow::StatsTab()
 {
     CVehicle* pVeh = CWorld::GetInstance()->pVehicle;
 
-    if (ImGui::Button("Drop random weapon", ImVec2(Ui::GetSize())))
+  /*  if (ImGui::Button("Drop random weapon", ImVec2(Ui::GetSize())))
     {
         ((int(*__fastcall)(int))0x585D90)(reinterpret_cast<int>(CWorld::GetInstance()->pPlayer));
     }
-    ImGui::Spacing();
+    ImGui::Spacing();*/
     if (ImGui::BeginTabBar("STatsTabBar"))
     {
         if (ImGui::BeginTabItem("Checkbox"))
@@ -221,7 +221,7 @@ void MenuWindow::StatsTab()
                 }
                 else
                 {
-                    CWorld::GetInstance()->pPlayer->Health = CHud::GetInstance()->Health;
+                    CWorld::GetInstance()->pPlayer->Health = (float)CHud::GetInstance()->Health;
                     injector::WriteMemoryRaw(0x59427F, (void*)"\xD9\x86\x44\x06\x00\x00", 6, true);
                 }
             }

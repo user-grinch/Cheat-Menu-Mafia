@@ -7,6 +7,7 @@ HRESULT CALLBACK D3dHook::hkGetDeviceState(IDirectInputDevice8* pThis, DWORD cbD
 
 	/*
 	* We're detecting it here since usual WndProc doesn't seem to work
+	* TODO: This still doesn't detect special keys like Ctrl, Shift etc..
 	*/
 	if (result == DI_OK && ImGui::GetIO().MouseDrawCursor)
 	{
@@ -174,17 +175,21 @@ bool D3dHook::GetDinputDevice(void** pMouse, size_t Size)
 		return false;
 	}
 
-	LPDIRECTINPUTDEVICE8  lpdiMouse;
-	if (pDirectInput->CreateDevice(GUID_SysMouse, &lpdiMouse, NULL) != DI_OK)
+	LPDIRECTINPUTDEVICE8  lpdiInput;
+
+	/*
+	* We're creating a sysMouse but it still seems to receive keyboard messages?
+	*/
+	if (pDirectInput->CreateDevice(GUID_SysMouse, &lpdiInput, NULL) != DI_OK)
 	{
 		pDirectInput->Release();
 		return false;
 	}
 
-	lpdiMouse->SetDataFormat(&c_dfDIKeyboard);
-	lpdiMouse->SetCooperativeLevel(GetActiveWindow(), DISCL_NONEXCLUSIVE);
-	memcpy(pMouse, *reinterpret_cast<void***>(lpdiMouse), Size);
-	lpdiMouse->Release();
+	lpdiInput->SetDataFormat(&c_dfDIKeyboard);
+	lpdiInput->SetCooperativeLevel(GetActiveWindow(), DISCL_NONEXCLUSIVE);
+	memcpy(pMouse, *reinterpret_cast<void***>(lpdiInput), Size);
+	lpdiInput->Release();
 	pDirectInput->Release();
 	return true;
 }
