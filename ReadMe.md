@@ -13,5 +13,17 @@ A CheatMenu for OG Mafia The City of Lost Heaven. Download binaries from [here](
 2. Download binaries from [here](https://github.com/user-grinch/Cheat-Menu-Gun/releases)
 3. Place the files inside your game directory (Replace if necessary)
 
+
+## Images
+<details>
+  <summary>Show Images</summary>
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/1.bmp">
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/2.bmp">
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/3.bmp">
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/4.bmp">
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/5.bmp">
+  <img src="https://raw.githubusercontent.com/user-grinch/Cheat-Menu-Mafia/rewrite/images/6.bmp">
+</details>
+
 **PS:** Let me know about ideas but no guraantees if or when I implement them.
 
