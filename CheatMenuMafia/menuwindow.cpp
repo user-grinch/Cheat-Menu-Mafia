@@ -2,6 +2,7 @@
 #include "menuwindow.h"
 #include "menuinfo.h"
 #include "ui.h"
+#include "overlaywindow.h"
 #include "game/CWorld.h"
 #include "game/CHud.h"
 #include "vendor/patch/assembly.hpp"
@@ -26,6 +27,7 @@ void MenuWindow::Draw()
 
                 ImGui::SetNextWindowSize(ImVec2(width, height));
             }
+            OverlayWindow::GetCPUUsageInit();
             bInit = true;
         }
         
@@ -33,6 +35,8 @@ void MenuWindow::Draw()
         Ui::DrawHeaders(header);
         ImGui::End();
     }
+
+    OverlayWindow::Draw();
 }
 
 void MenuWindow::Process()
@@ -351,46 +355,98 @@ void MenuWindow::StatsTab()
 
 void MenuWindow::MenuTab()
 {
-    if (ImGui::Button("Check update", ImVec2(Ui::GetSize(3))))
+    if (ImGui::BeginTabBar("MenuTabBar"))
     {
-        ShellExecute(NULL, "open", "https://github.com/user-grinch/Cheat-Menu/releases/", NULL, NULL, SW_SHOWNORMAL);
+        if (ImGui::BeginTabItem("Overlay"))
+        {
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::SameLine();
+            if (Ui::ListBox("Overlay", OverlayWindow::posNames, (int&)OverlayWindow::mSelectedPos))
+            {
+                gConfig.SetValue("overlay.selected_pos", OverlayWindow::mSelectedPos);
+            }
+
+            ImGui::Spacing();
+
+            ImGui::Columns(2, nullptr, false);
+            if (ImGui::Checkbox("No background", &OverlayWindow::bTransparent))
+            {
+                gConfig.SetValue("overlay.transparent", OverlayWindow::bTransparent);
+            }
+
+            if (ImGui::Checkbox("Show coordinates", &OverlayWindow::bCoord))
+            {
+                gConfig.SetValue("overlay.coord", OverlayWindow::bCoord);
+            }
+
+            if (ImGui::Checkbox("Show CPU usage", &OverlayWindow::bCpuUsage))
+            {
+                gConfig.SetValue("overlay.cpu_usage", OverlayWindow::bCpuUsage);
+            }
+
+            ImGui::NextColumn();
+
+            if (ImGui::Checkbox("Show FPS", &OverlayWindow::bFPS))
+            {
+                gConfig.SetValue("overlay.fps", OverlayWindow::bFPS);
+            }
+
+            if (ImGui::Checkbox("Show RAM usage", &OverlayWindow::bMemUsage))
+            {
+                gConfig.SetValue("overlay.mem_usage", OverlayWindow::bMemUsage);
+            }
+            ImGui::Columns(1);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("About"))
+        {
+            ImGui::Spacing();
+            if (ImGui::Button("Check update", ImVec2(Ui::GetSize(3))))
+            {
+                ShellExecute(NULL, "open", "https://github.com/user-grinch/Cheat-Menu/releases/", NULL, NULL, SW_SHOWNORMAL);
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Discord server", ImVec2(Ui::GetSize(3))))
+            {
+                ShellExecuteA(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("GitHub repo", ImVec2(Ui::GetSize(3))))
+            {
+                ShellExecuteA(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
+            }
+            ImGui::Spacing();
+
+            if (ImGui::BeginChild("AboutChild"))
+            {
+                ImGui::Columns(2, nullptr, false);
+                ImGui::Text("Author: Grinch_");
+
+                ImGui::Text("Version: %s", MENU_VERSION_NUMBER);
+
+                ImGui::NextColumn();
+                ImGui::Text("ImGui: %s", ImGui::GetVersion());
+                ImGui::Text("Build: %s", BUILD_NUMBER);
+
+                ImGui::Columns(1);
+
+                ImGui::Dummy(ImVec2(0, 10));
+                ImGui::TextWrapped("Thanks to Darkpassanger123 & l0wb1t for sharing their work.");
+                ImGui::Dummy(ImVec2(0, 10));
+                ImGui::TextWrapped("If you find bugs or have suggestions, let me know on discord.");
+                ImGui::Dummy(ImVec2(0, 20));
+                Ui::CenterdText("Copyright Grinch_ 2021-2022.");
+
+                ImGui::EndChild();
+            }
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Discord server", ImVec2(Ui::GetSize(3))))
-    {
-        ShellExecuteA(nullptr, "open", DISCORD_INVITE, nullptr, nullptr, SW_SHOWNORMAL);
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("GitHub repo", ImVec2(Ui::GetSize(3))))
-    {
-        ShellExecuteA(nullptr, "open", GITHUB_LINK, nullptr, nullptr, SW_SHOWNORMAL);
-    }
-    ImGui::Spacing();
-
-    if (ImGui::BeginChild("AboutChild"))
-    {
-        ImGui::Columns(2, nullptr, false);
-        ImGui::Text("Author: Grinch_");
-
-        ImGui::Text("Version: %s", MENU_VERSION_NUMBER);
-
-        ImGui::NextColumn();
-        ImGui::Text("ImGui: %s", ImGui::GetVersion());
-        ImGui::Text("Build: %s", BUILD_NUMBER);
-
-        ImGui::Columns(1);
-
-        ImGui::Dummy(ImVec2(0, 10));
-        ImGui::TextWrapped("Thanks to Darkpassanger123 & l0wb1t for sharing their work.");
-        ImGui::Dummy(ImVec2(0, 10));
-        ImGui::TextWrapped("If you find bugs or have suggestions, let me know on discord.");
-        ImGui::Dummy(ImVec2(0, 20));
-        Ui::CenterdText("Copyright Grinch_ 2021-2022.");
-
-        ImGui::EndChild();
-    }
+    
 }

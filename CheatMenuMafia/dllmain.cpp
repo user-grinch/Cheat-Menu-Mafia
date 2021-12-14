@@ -5,6 +5,7 @@
 
 void MainThread(void* param)
 {
+    Sleep(5000);
     gLog << "Starting...\nVersion: " MENU_TITLE "\nAuthor: Grinch_\nDiscord: " DISCORD_INVITE "\nMore Info: "
         GITHUB_LINK "\n" << std::endl;
 

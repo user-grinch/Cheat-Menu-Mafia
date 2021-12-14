@@ -1,6 +1,27 @@
 #include "pch.h"
 #include "ui.h"
 
+bool Ui::ListBox(const char* label, std::vector<std::string>& all_items, int& selected)
+{
+	bool rtn = false;
+	if (ImGui::BeginCombo(label, all_items[selected].c_str()))
+	{
+		for (size_t index = 0; index < all_items.size(); index++)
+		{
+			if (selected != index)
+			{
+				if (ImGui::MenuItem(all_items[index].c_str()))
+				{
+					selected = index;
+					rtn = true;
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return rtn;
+}
+
 bool Ui::ListBoxStr(const char* label, std::vector<std::string>& all_items, std::string& selected)
 {
 	bool rtn = false;

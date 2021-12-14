@@ -26,6 +26,7 @@ public:
 	static void DrawHeaders(CallbackTable& data);
 	static void DrawJSON(JsonData& data, JsonCallback func_left_click, JsonCallback func_right_click);
 	static ImVec2 GetSize(short count = 1, bool spacing = true);
+	static bool ListBox(const char* label, std::vector<std::string>& all_items, int& selected);
 	static bool ListBoxStr(const char* label, std::vector<std::string>& all_items, std::string& selected);
 };
 
