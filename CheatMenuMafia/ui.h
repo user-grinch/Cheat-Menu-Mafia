@@ -14,7 +14,6 @@ private:
 		std::string value;
 	};
 
-	static inline std::string m_HeaderId;
 	static inline JsonPopUpData jsonPopup;
 
 public:

@@ -12,27 +12,43 @@ void MenuWindow::Draw()
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDrawCursor = m_bShowMenu;
 
+    static bool bInit;
+    // Set a proper size
+    if (!bInit)
+    {
+        OverlayWindow::Init();
+        ApplyStyle();
+        bInit = true;
+    }
+
     if (m_bShowMenu)
     {
-        static bool bInit;
-
+        static bool bInit2;
         // Set a proper size
-        if (!bInit)
+        if (!bInit2)
         {
             RECT rect;
+            LONG width, height;
             if (GetWindowRect(GetForegroundWindow(), &rect))
             {
-                float width = (rect.right - rect.left) / 4.0f;
-                float height = (rect.bottom - rect.top) / 1.2f;
-
-                ImGui::SetNextWindowSize(ImVec2(width, height));
+                width = (rect.right - rect.left);
+                height = (rect.bottom - rect.top);
             }
-            OverlayWindow::GetCPUUsageInit();
-            bInit = true;
+
+            m_HeaderId = gConfig.GetValue("window.id", std::string(""));
+            m_fMenuSize.x = gConfig.GetValue("window.sizeX", width / 4.0f);
+            m_fMenuSize.y = gConfig.GetValue("window.sizeY", height / 1.2f);
+            ImGui::SetNextWindowSize(m_fMenuSize);
+
+            bInit2 = true;
         }
-        
+
         ImGui::Begin(MENU_TITLE, &m_bShowMenu, ImGuiWindowFlags_NoCollapse);
         Ui::DrawHeaders(header);
+
+        m_fMenuSize = ImGui::GetWindowSize();
+        gConfig.SetValue("window.sizeX", m_fMenuSize.x);
+        gConfig.SetValue("window.sizeY", m_fMenuSize.y);
         ImGui::End();
     }
 
@@ -83,6 +99,13 @@ void MenuWindow::Process()
         {
             pWorld->pPlayer->AmmoInClip = 99;
         }
+    }
+
+    static bool menuState;
+    if (m_bShowMenu != menuState)
+    {
+        gConfig.WriteToDisk();
+        menuState = m_bShowMenu;
     }
 }
 
@@ -179,15 +202,102 @@ void MenuWindow::TeleportTab()
 	}
 }
 
-void MenuWindow::StatsTab()
+void MenuWindow::ApplyStyle()
 {
-    CVehicle* pVeh = CWorld::GetInstance()->pVehicle;
+    ImGuiStyle* style = &ImGui::GetStyle();
+    ImVec4* colors = style->Colors;
+
+    style->WindowRounding = 1;
+    style->ScrollbarRounding = 1;
+    style->GrabRounding = 1;
+    style->WindowRounding = 1;
+    style->ChildRounding = 1;
+    style->ScrollbarRounding = 1;
+    style->GrabRounding = 1;
+    style->FrameRounding = 0;
+    style->TabRounding = 1.0;
+    style->AntiAliasedLines = true;
+    style->AntiAliasedFill = true;
+    style->Alpha = 1;
+
+    style->FrameBorderSize = 0;
+    style->ChildBorderSize = 0;
+    style->TabBorderSize = 0;
+    style->WindowBorderSize = 0;
+    style->PopupBorderSize = 0;
+
+    colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
+    colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    colors[ImGuiCol_FrameBg] = ImVec4(0.16f, 0.29f, 0.48f, 0.54f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+    colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+    colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+    colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.0f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+    colors[ImGuiCol_ResizeGrip] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.35f, 0.58f, 0.86f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.41f, 0.68f, 1.00f);
+    colors[ImGuiCol_TabUnfocused] = ImVec4(0.07f, 0.10f, 0.15f, 0.97f);
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.26f, 0.42f, 1.00f);
+    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+    colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+    colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+}
+
+void MenuWindow::CheatsTab()
+{
+    CWorld* pWorld = CWorld::GetInstance();
+    CVehicle* pVeh = pWorld->pVehicle;
 
   /*  if (ImGui::Button("Drop random weapon", ImVec2(Ui::GetSize())))
     {
         ((int(*__fastcall)(int))0x585D90)(reinterpret_cast<int>(CWorld::GetInstance()->pPlayer));
+    }*/
+    if (ImGui::Button("Copy coordinates", ImVec2(Ui::GetSize(2))))
+    {
+        CVector pos = pWorld->pPlayer->Position;
+        std::string text = std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z);
+
+        ImGui::SetClipboardText(text.c_str());
     }
-    ImGui::Spacing();*/
+    ImGui::SameLine();
+    if (ImGui::Button("Suicide", ImVec2(Ui::GetSize(2))))
+    {
+        pWorld->pPlayer->Health = 0.0f;
+    }
+    ImGui::Spacing();
     if (ImGui::BeginTabBar("STatsTabBar"))
     {
         if (ImGui::BeginTabItem("Checkbox"))
@@ -362,6 +472,7 @@ void MenuWindow::MenuTab()
             ImGui::Spacing();
             ImGui::Spacing();
             ImGui::SameLine();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() / 2);
             if (Ui::ListBox("Overlay", OverlayWindow::posNames, (int&)OverlayWindow::mSelectedPos))
             {
                 gConfig.SetValue("overlay.selected_pos", OverlayWindow::mSelectedPos);

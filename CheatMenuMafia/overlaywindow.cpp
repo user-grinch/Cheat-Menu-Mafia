@@ -15,6 +15,20 @@ void OverlayWindow::GetCPUUsageInit()
 	PdhCollectQueryData(cpuQuery);
 }
 
+void OverlayWindow::Init()
+{
+	bCoord = gConfig.GetValue("overlay.coord", false);
+	bCpuUsage = gConfig.GetValue("overlay.cpu_usage", false);
+	bFPS = gConfig.GetValue("overlay.fps", false);
+	bTransparent = gConfig.GetValue("overlay.transparent", false);
+	bMemUsage = gConfig.GetValue("overlay.mem_usage", false);
+	mSelectedPos = (DISPLAY_POS)gConfig.GetValue("overlay.selected_pos", (int)DISPLAY_POS::BOTTOM_RIGHT);
+	fPosX = gConfig.GetValue("overlay.posx", 0);
+	fPosY = gConfig.GetValue("overlay.posy", 0);
+
+	GetCPUUsageInit();
+}
+
 double OverlayWindow::GetCurrentCPUUsage()
 {
 	PDH_FMT_COUNTERVALUE counterVal;
@@ -26,6 +40,12 @@ double OverlayWindow::GetCurrentCPUUsage()
 
 void OverlayWindow::Draw()
 {
+	CWorld* pWorld = CWorld::GetInstance();
+	if (!(pWorld && pWorld->pPlayer))
+	{
+		return;
+	}
+
 	bool m_bShowMenu = bCoord || bFPS || bCpuUsage || bMemUsage;
 
 	const float offset = 10.0f;
@@ -79,7 +99,7 @@ void OverlayWindow::Draw()
 	if (m_bShowMenu && ImGui::Begin("Overlay", nullptr, window_flags))
 	{
 		CVector pos{ 0,0,0 };
-		pos = CWorld::GetInstance()->pPlayer->Position;
+		pos = pWorld->pPlayer->Position;
 
 		static float lastTimer = 0;
 		float timer = ImGui::GetTime();

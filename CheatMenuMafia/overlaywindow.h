@@ -31,13 +31,17 @@ public:
 	static inline PDH_HQUERY cpuQuery;
 	static inline PDH_HCOUNTER cpuTotal;
 
+private:
+	static void GetCPUUsageInit();
+	static double GetCurrentCPUUsage();
+
 public:
 	OverlayWindow() = delete;
 	OverlayWindow(OverlayWindow&) = delete;
 	void operator=(OverlayWindow const&) = delete;
 
+	static void Init();
 	static void Draw();
-	static void GetCPUUsageInit();
-	static double GetCurrentCPUUsage();
+
 };
 

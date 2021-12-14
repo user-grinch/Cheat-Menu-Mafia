@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ui.h"
+#include "menuWindow.h"
 
 bool Ui::ListBox(const char* label, std::vector<std::string>& all_items, int& selected)
 {
@@ -174,14 +175,14 @@ void Ui::DrawHeaders(CallbackTable& data)
 	{
 		const char* btn_text = data[i].first.c_str();
 
-		if (btn_text == m_HeaderId)
+		if (btn_text == MenuWindow::m_HeaderId)
 		{
 			style.Colors[ImGuiCol_Button] = style.Colors[ImGuiCol_ButtonActive];
 			pCallback = data[i].second;
 		}
 		if (ImGui::Button(btn_text, size))
 		{
-			m_HeaderId = btn_text;
+			MenuWindow::m_HeaderId = btn_text;
 			pCallback = data[i].second;
 		}
 		style.Colors[ImGuiCol_Button] = buttonCol;
@@ -194,7 +195,7 @@ void Ui::DrawHeaders(CallbackTable& data)
 	ImGui::PopStyleVar();
 	ImGui::Dummy(ImVec2(0, 20));
 
-	if (m_HeaderId == "")
+	if (MenuWindow::m_HeaderId == "")
 	{
 		// Show Welcome page
 		ImGui::NewLine();
