@@ -3,6 +3,7 @@
 #include "menuinfo.h"
 #include "ui.h"
 #include "overlaywindow.h"
+#include "notifiypopup.h"
 #include "game/CWorld.h"
 #include "game/CHud.h"
 #include "vendor/patch/assembly.hpp"
@@ -53,6 +54,7 @@ void MenuWindow::Draw()
     }
 
     OverlayWindow::Draw();
+    NotifiyPopup::Draw();
 }
 
 void MenuWindow::Process()
@@ -131,10 +133,11 @@ void MenuWindow::TeleportTab()
 						sscanf(m_nInputBuffer, "%f,%f,%f", &pos.x, &pos.y, &pos.z);
 						pos.z += 1.0f;
                         CWorld::GetInstance()->pPlayer->Position = pos;
+                        NotifiyPopup::AddToQueue("Teleported to coordinate");
 					}
 					catch (...)
 					{
-						// SetHelpMessage("Invalid coordinate", false, false, false);
+                        NotifiyPopup::AddToQueue("Invalid coordinate");
 					}
 				}
 				ImGui::SameLine();
@@ -166,7 +169,7 @@ void MenuWindow::TeleportTab()
                     }
                     catch (...)
                     {
-                        //SetHelpMessage("Invalid location", false, false, false);
+                        NotifiyPopup::AddToQueue("Invalid location");
                     }
                 }, 
                 [](std::string& cat, std::string& key, std::string& val)
@@ -174,12 +177,12 @@ void MenuWindow::TeleportTab()
                     if (cat == "Custom")
                     {
                         m_tpData.m_pJson->m_Data["Custom"].erase(key);
-                        //SetHelpMessage("Location removed", false, false, false);
+                        NotifiyPopup::AddToQueue("Location removed");
                         m_tpData.m_pJson->WriteToDisk();
                     }
                     else
                     {
-                        //SetHelpMessage("You can only remove custom location", false, false, false);
+                        NotifiyPopup::AddToQueue("You can only remove custom location");
                     }
                 });
 			ImGui::EndTabItem();
@@ -195,6 +198,7 @@ void MenuWindow::TeleportTab()
 			{
 				m_tpData.m_pJson->m_Data["Custom"][m_nLocationBuffer] = std::string(m_nInputBuffer);
 				m_tpData.m_pJson->WriteToDisk();
+                NotifiyPopup::AddToQueue("Location added");
 			}
 			ImGui::EndTabItem();
 		}
@@ -291,6 +295,7 @@ void MenuWindow::CheatsTab()
         std::string text = std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z);
 
         ImGui::SetClipboardText(text.c_str());
+        NotifiyPopup::AddToQueue("Copied coordinates to clipboard");
     }
     ImGui::SameLine();
     if (ImGui::Button("Suicide", ImVec2(Ui::GetSize(2))))
