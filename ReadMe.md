@@ -10,9 +10,13 @@ A CheatMenu for OG Mafia The City of Lost Heaven. Download binaries from [here](
 
 ## Installation
 1. You need [GOG](https://www.gog.com/game/mafia) version of Mafia 1
-2. Download binaries from [here](https://github.com/user-grinch/Cheat-Menu-Gun/releases)
-3. Place the files inside your game directory (Replace if necessary)
+2. Install [DirectX9](https://www.microsoft.com/en-us/download/details.aspx?id=35), [Visual C++ Redistributable 2022 x86](https://aka.ms/vs/17/release/vc_redist.x86.exe)
+3. Download binaries from [here](https://github.com/user-grinch/Cheat-Menu-Gun/releases)
+4. Place the files inside your game directory (Replace if necessary)
 
+## Credits
+1. Darkpassanger123
+2. l0wb1t 
 
 ## Images
 <details>
